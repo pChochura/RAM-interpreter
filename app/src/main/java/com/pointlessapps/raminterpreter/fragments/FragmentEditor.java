@@ -4,19 +4,18 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.AutocompletionListAdapter;
+import com.pointlessapps.raminterpreter.models.AutocompletionItem;
 import com.pointlessapps.raminterpreter.models.Command;
-import com.pointlessapps.raminterpreter.models.LineNumberEditText;
+import com.pointlessapps.raminterpreter.views.LineNumberEditText;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 import com.pointlessapps.raminterpreter.utils.ParseException;
 
@@ -26,7 +25,7 @@ import java.util.List;
 public class FragmentEditor extends Fragment {
 
 	private ViewGroup rootView;
-	private List<String> items;
+	private List<AutocompletionItem> items;
 	private List<Command> commands;
 	private AutocompletionListAdapter autocompletionListAdapter;
 	private String code;
@@ -84,15 +83,15 @@ public class FragmentEditor extends Fragment {
 			if((selection = commandsEditor.getSelectionStart()) == commandsEditor.getSelectionEnd() && selection != -1) {
 				int startWordIndex = getStartWordIndex(editorText, selection);
 				String typedText = s.toString().substring(startWordIndex, selection);
-				List<String> matching = getMatching(typedText);
-				if(matching.size() == 1 && matching.get(0).equals(typedText))
+				List<AutocompletionItem> matching = getMatching(typedText);
+				if(matching.size() == 1 && matching.get(0).getText().equals(typedText))
 					showAutocompletion(null);
 				else showAutocompletion(matching);
 			}
 		}
 	}
 
-	private void showAutocompletion(List<String> items) {
+	private void showAutocompletion(List<AutocompletionItem> items) {
 		this.items.clear();
 		if(items != null)
 			this.items.addAll(items);
@@ -110,11 +109,16 @@ public class FragmentEditor extends Fragment {
 		return startWordIndex;
 	}
 
-	private List<String> getMatching(String text) {
-		List<String> matching = new ArrayList<>();
+	private List<AutocompletionItem> getMatching(String text) {
+		List<AutocompletionItem> matching = new ArrayList<>();
 		if(!text.isEmpty())
 			for(String s : Command.keyWords)
-				if(s.toLowerCase().contains(text.toLowerCase())) matching.add(s);
+				if(s.toLowerCase().contains(text.toLowerCase())) {
+					AutocompletionItem item = new AutocompletionItem();
+					item.setText(s);
+					item.setMatching(text.toLowerCase());
+					matching.add(item);
+				}
 		return matching;
 	}
 

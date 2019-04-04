@@ -1,4 +1,4 @@
-package com.pointlessapps.raminterpreter.models;
+package com.pointlessapps.raminterpreter.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -37,7 +37,7 @@ public class LineNumberEditText extends AppCompatEditText {
 
 	private void recalculatePadding() {
 		prevText = getText().toString();
-		int padding = ((int) Math.log10(getLineCount()) + 2) * charWidth;
+		int padding = ((int)Math.log10(getLineCount()) + 2) * charWidth;
 		setPadding(Math.max(padding, minPadding), getPaddingTop(), getPaddingRight(), getPaddingBottom());
 	}
 

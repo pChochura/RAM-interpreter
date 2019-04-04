@@ -3,18 +3,20 @@ package com.pointlessapps.raminterpreter.adapters;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.pointlessapps.raminterpreter.R;
+import com.pointlessapps.raminterpreter.models.AutocompletionItem;
 import com.pointlessapps.raminterpreter.models.Command;
 
 import java.util.List;
 
 public class AutocompletionListAdapter extends RecyclerView.Adapter<AutocompletionListAdapter.DataObjectHolder> {
 
-	private List<String> items;
+	private List<AutocompletionItem> items;
 	private OnClickListener onClickListener;
 
 	class DataObjectHolder extends RecyclerView.ViewHolder {
@@ -29,7 +31,7 @@ public class AutocompletionListAdapter extends RecyclerView.Adapter<Autocompleti
 		}
 	}
 
-	public AutocompletionListAdapter(List<String> items) {
+	public AutocompletionListAdapter(List<AutocompletionItem> items) {
 		this.items = items;
 		setHasStableIds(true);
 	}
@@ -50,7 +52,7 @@ public class AutocompletionListAdapter extends RecyclerView.Adapter<Autocompleti
 
 	@Override
 	public void onBindViewHolder(@NonNull DataObjectHolder holder, int position) {
-		holder.text.setText(items.get(position));
+		holder.text.setText(Html.fromHtml(items.get(position).getFormatted()));
 	}
 
 	@Override

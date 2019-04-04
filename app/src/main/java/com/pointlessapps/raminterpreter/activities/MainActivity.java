@@ -240,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
 			if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
 				showDialog(getString(R.string.caution), getString(R.string.discard_changes), this::showCommandsList, () -> {});
 			else showCommandsList();
-		} else super.onBackPressed();
+		} else if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
+			showDialog(getString(R.string.caution), getString(R.string.leave_unsaved), this::showCommandsList, super::onBackPressed);
 	}
 }
