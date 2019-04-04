@@ -2,6 +2,7 @@ package com.pointlessapps.raminterpreter.activities;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -21,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.ihhira.android.filechooser.FileChooser;
-import com.obsez.android.lib.filechooser.internals.FileUtil;
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.RegistersListAdapter;
 import com.pointlessapps.raminterpreter.fragments.FragmentCommandsList;
@@ -168,7 +168,10 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showSaveFileDialog() {
-		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SAVE_AS, new File(FileUtil.getStoragePath(getApplicationContext(), false)));
+		File startingFile = Environment.getExternalStorageDirectory();
+		if(!startingFile.exists())
+			startingFile = Environment.getDataDirectory();
+		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SAVE_AS, startingFile);
 		fileChooser.setFilelistFilter("txt,c,cpp", true);
 		fileChooser.show(file -> {
 			try {
@@ -184,7 +187,10 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showOpenFileDialog() {
-		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, new File(FileUtil.getStoragePath(getApplicationContext(), false)));
+		File startingFile = Environment.getExternalStorageDirectory();
+		if(!startingFile.exists())
+			startingFile = Environment.getDataDirectory();
+		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, startingFile);
 		fileChooser.setFilelistFilter("txt,c,cpp", true);
 		fileChooser.show(file -> {
 			try {
