@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,7 @@ import com.pointlessapps.raminterpreter.R;
 
 public class RegistersListAdapter extends RecyclerView.Adapter<RegistersListAdapter.DataObjectHolder> {
 
-	private int[] registers;
+	private SparseIntArray registers;
 	private Context context;
 
 	class DataObjectHolder extends RecyclerView.ViewHolder {
@@ -27,7 +28,7 @@ public class RegistersListAdapter extends RecyclerView.Adapter<RegistersListAdap
 		}
 	}
 
-	public RegistersListAdapter(int[] registers) {
+	public RegistersListAdapter(SparseIntArray registers) {
 		this.registers = registers;
 		setHasStableIds(true);
 	}
@@ -45,11 +46,11 @@ public class RegistersListAdapter extends RecyclerView.Adapter<RegistersListAdap
 	@Override
 	public void onBindViewHolder(@NonNull DataObjectHolder holder, int position) {
 		holder.title.setText(context.getResources().getString(R.string.register, position));
-		holder.value.setText(String.valueOf(registers[position]));
+		holder.value.setText(String.valueOf(registers.get(position, 0)));
 	}
 
 	@Override
 	public int getItemCount() {
-		return registers.length;
+		return registers.keyAt(registers.size() - 1) + 1;
 	}
 }

@@ -1,14 +1,15 @@
 package com.pointlessapps.raminterpreter.models;
 
 import android.content.Context;
-import android.util.Log;
+import android.util.SparseArray;
 
 import com.pointlessapps.raminterpreter.R;
+import com.pointlessapps.raminterpreter.utils.ParseException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,13 +30,15 @@ public class Command {
 	public static final List<String> keyWords = Arrays.asList(COMMAND.getAll());
 
 	private static Pattern commentRegex = Pattern.compile("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
-	private static Pattern addressRegex = Pattern.compile("([*=]?\\d)|(\\w)");
+	private static Pattern jumpAddressRegex = Pattern.compile("(\\w+)");
+	private static Pattern registerAddressRegex = Pattern.compile("([*=]?\\d+)");
 
 	private String label;
 	private String command;
 	private String address;
 	private String comment;
 	private boolean selected;
+	private int id;
 
 	public Command() {
 		this("", "", "", "");
@@ -47,6 +50,7 @@ public class Command {
 		this.address = address;
 		this.comment = comment;
 		this.selected = false;
+		this.id = UUID.randomUUID().hashCode();
 	}
 
 	public void setLabel(String label) {
@@ -102,6 +106,10 @@ public class Command {
 		return builder.toString();
 	}
 
+	@Override public int hashCode() {
+		return id;
+	}
+
 	public static String getStringList(List<Command> commands) {
 		StringBuilder builder = new StringBuilder();
 		for(Command c : commands) {
@@ -111,8 +119,11 @@ public class Command {
 		return builder.delete(Math.max(builder.length() - 1, 0), builder.length()).toString();
 	}
 
-	public static List<Command> getCommandsList(String stringList, Context context) throws Exception {
+	public static List<Command> getCommandsList(String stringList, Context context) throws ParseException {
+		boolean haltCommand = false;
 		List<Command> commands = new ArrayList<>();
+		List<String> labels = new ArrayList<>();
+		SparseArray<Command> jumpCommands = new SparseArray<>();
 		String[] lines = stringList.split("\n");
 		for(int i = 0; i < lines.length; i++) {
 			String line = lines[i];
@@ -125,47 +136,64 @@ public class Command {
 					command.setComment(line.substring(commentStart + 1, commentEnd - 1));
 					line = line.substring(0, Math.max(commentStart - 1, 0));
 				} else if(line.contains("\"") || line.contains("'"))
-					throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_comments), i + 1));
+					throw new ParseException(context.getString(R.string.exception_comments), i + 1);
 
 				String[] words = line.split(" ");
 
 				for(int j = 0; j < words.length; j++) {
 					String word = words[j];
 					if(word.length() > 0) {
-						if(word.indexOf(":") == word.length() - 1) {
+						if(j == 0 && command.getLabel().isEmpty() && word.indexOf(":") == word.length() - 1) {
 							String label = word.substring(0, Math.max(word.length() - 1, 0));
 							if(label.isEmpty())
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_label_empty), i + 1));
-							else if(!command.getLabel().isEmpty())
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_label_multiple), i + 1));
-							if(j != 0)
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_label_position), i + 1));
+								throw new ParseException(context.getString(R.string.exception_label_empty), i + 1);
 							command.setLabel(label);
-						} else if(keyWords.contains(word)) {
+						} else if(j == 0 || j == 1 && !command.getLabel().isEmpty()) {
+							if(!keyWords.contains(word.toUpperCase()))
+								throw new ParseException(context.getString(R.string.exception_command_spelling), word, i + 1);
 							if(!command.getCommand().isEmpty())
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_command_multiple), i + 1));
-							if(!(!command.getLabel().isEmpty() && j == 1 || command.getLabel().isEmpty() && j == 0))
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_command_position), i + 1));
-							command.setCommand(word);
-						} else if(addressRegex.matcher(word).find()) {
+								throw new ParseException(context.getString(R.string.exception_command_multiple), i + 1);
+							command.setCommand(word.toUpperCase());
+						} else if(j == 1 || j == 2 && !command.getLabel().isEmpty()) {
+							String c = command.getCommand();
+							if(!c.isEmpty())
+								if(c.equals(COMMAND.JZERO.toString()) || c.equals(COMMAND.JGTZ.toString()) || c.equals(COMMAND.JUMP.toString())) {
+									if(!jumpAddressRegex.matcher(word).matches())
+										throw new ParseException(context.getString(R.string.exception_address_spelling), word, i + 1);
+								} else if(!registerAddressRegex.matcher(word).matches())
+									throw new ParseException(context.getString(R.string.exception_address_spelling), word, i + 1);
 							if(!command.getAddress().isEmpty())
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_address_multiple), i + 1));
-							if(!(!command.getLabel().isEmpty() && j == 2 || command.getLabel().isEmpty() && j == 1))
-								throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_address_position), i + 1));
+								throw new ParseException(context.getString(R.string.exception_address_multiple), i + 1);
 							command.setAddress(word);
 						}
 					}
 				}
 
 				if(command.getCommand().isEmpty())
-					throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_command_empty), i + 1));
+					throw new ParseException(context.getString(R.string.exception_command_empty), i + 1);
 
 				if(!command.getCommand().equals(COMMAND.HALT.toString()) && command.getAddress().isEmpty())
-					throw new Exception(String.format(Locale.getDefault(), context.getString(R.string.exception_address_empty), i + 1));
+					throw new ParseException(context.getString(R.string.exception_address_empty), i + 1);
+
+				if(command.getCommand().equals(COMMAND.JZERO.toString()) || command.getCommand().equals(COMMAND.JGTZ.toString()) || command.getCommand().equals(COMMAND.JUMP.toString()))
+					jumpCommands.put(i, command);
+
+				if(!command.getLabel().isEmpty())
+					labels.add(command.getLabel());
+
+				if(command.getCommand().equals(COMMAND.HALT.toString()))
+					haltCommand = true;
 
 				commands.add(command);
 			}
 		}
+		for(int i = 0; i < jumpCommands.size(); i++) {
+			Command command = jumpCommands.valueAt(i);
+			if(!labels.contains(command.getAddress()))
+				throw new ParseException(context.getString(R.string.exception_label_spelling), command.getAddress(), jumpCommands.keyAt(i) + 1);
+		}
+		if(!haltCommand)
+			throw new ParseException(context.getString(R.string.exception_halt_missing), COMMAND.HALT.toString());
 		return commands;
 	}
 }

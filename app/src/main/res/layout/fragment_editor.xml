@@ -5,12 +5,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <android.support.v7.widget.AppCompatEditText
+    <com.pointlessapps.raminterpreter.models.LineNumberEditText
         android:id="@+id/commandsEditor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorEditorBg"
         android:textSize="20sp"
+        android:textColorHint="@color/colorText2"
         android:textColor="@color/colorEditorText"
         android:gravity="left|top"
         android:padding="10dp"

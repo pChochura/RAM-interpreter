@@ -7,4 +7,10 @@
         <item name="android:fontFamily">@font/josefin_sans</item>
     </style>
 
+    <style name="SplashTheme" parent="AppTheme">
+        <item name="android:background">@drawable/background_splash</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
+
 </resources>

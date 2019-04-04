@@ -11,4 +11,6 @@
     <color name="colorEditorBg">#212121</color>
     <color name="colorEditorText">#FFE082</color>
     <color name="colorWhite">#ffffff</color>
+    <color name="colorText2">#515151</color>
+    <color name="colorText3">#212121</color>
 </resources>
