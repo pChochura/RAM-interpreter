@@ -9,8 +9,12 @@
     <color name="colorDark">#F0F0F0</color>
     <color name="colorLight">#f8f8f8</color>
     <color name="colorEditorBg">#212121</color>
-    <color name="colorEditorText">#FFE082</color>
+    <color name="colorEditorText">#ffffff</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorText2">#515151</color>
     <color name="colorText3">#212121</color>
+    <color name="colorAddress">#D6AB55</color>
+    <color name="colorComment">#495D3B</color>
+    <color name="colorCommand">#805869</color>
+    <color name="colorLabel">#B66126</color>
 </resources>

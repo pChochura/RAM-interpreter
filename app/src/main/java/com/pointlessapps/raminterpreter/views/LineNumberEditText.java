@@ -4,21 +4,46 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.AppCompatEditText;
+import android.text.Editable;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 
 import com.pointlessapps.raminterpreter.R;
+import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LineNumberEditText extends AppCompatEditText {
 
+	private static final Pattern PATTERN_ADDRESS = Pattern.compile(
+			"([*=]?\\d+)");
+	private static final Pattern PATTERN_LABELS = Pattern.compile(
+			"(\\w+:)");
+	private static final Pattern PATTERN_KEYWORDS = Pattern.compile(
+			"\\b(READ|LOAD|WRITE|JUMP|JZERO|JGTZ|SUB|ADD|MULT|DIV|HALT|STORE)\\b");
+	private static final Pattern PATTERN_COMMENTS = Pattern.compile(
+			"([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
+
+	private final Handler updateHandler = new Handler();
+	private final Runnable updateRunnable = () -> highlightWithoutChange(getText());
+
+	private int updateDelay = 100;
 	private int charWidth;
 	private int minPadding;
 	private String prevText;
 	private Rect rect;
 	private Paint paint;
+
+	private int colorAddress;
+	private int colorLabel;
+	private int colorCommand;
+	private int colorComment;
 
 	public LineNumberEditText(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -30,9 +55,73 @@ public class LineNumberEditText extends AppCompatEditText {
 		paint.setTextSize(getTextSize());
 
 		Rect bounds = new Rect();
-		paint.getTextBounds("0", 0, "0".length(), bounds);
+		paint.getTextBounds("0", 0, 1, bounds);
 		minPadding = getPaddingLeft();
 		charWidth = bounds.width();
+
+		colorAddress = getResources().getColor(R.color.colorAddress);
+		colorLabel = getResources().getColor(R.color.colorLabel);
+		colorCommand = getResources().getColor(R.color.colorCommand);
+		colorComment = getResources().getColor(R.color.colorComment);
+
+		addTextChangedListener(new OnTextChanged(e -> {
+			cancelUpdate();
+			updateHandler.postDelayed(updateRunnable, updateDelay);
+		}));
+	}
+
+	private static void clearSpans(Editable e, int length) {
+		ForegroundColorSpan spans[] = e.getSpans(0, length, ForegroundColorSpan.class);
+		for(int i = spans.length; i-- > 0; ) e.removeSpan(spans[i]);
+	}
+
+	private void highlightWithoutChange(Editable e) {
+		highlight(e);
+	}
+
+	private void highlight(Editable e) {
+		try {
+			int length = e.length();
+			clearSpans(e, length);
+
+			if(length == 0) return;
+
+			for(Matcher m = PATTERN_ADDRESS.matcher(e); m.find(); ) {
+				e.setSpan(
+						new ForegroundColorSpan(colorAddress),
+						m.start(),
+						m.end(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+
+			for(Matcher m = PATTERN_LABELS.matcher(e); m.find(); ) {
+				e.setSpan(
+						new ForegroundColorSpan(colorLabel),
+						m.start(),
+						m.end(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+
+			for(Matcher m = PATTERN_KEYWORDS.matcher(e); m.find(); ) {
+				e.setSpan(
+						new ForegroundColorSpan(colorCommand),
+						m.start(),
+						m.end(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+
+			for(Matcher m = PATTERN_COMMENTS.matcher(e); m.find(); ) {
+				e.setSpan(
+						new ForegroundColorSpan(colorComment),
+						m.start(),
+						m.end(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+		} catch(IllegalStateException ignored) { }
+	}
+
+	private void cancelUpdate() {
+		updateHandler.removeCallbacks(updateRunnable);
 	}
 
 	private void recalculatePadding() {

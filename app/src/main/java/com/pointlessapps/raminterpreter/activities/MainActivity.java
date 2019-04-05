@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 				fragmentEditor.saveCommands();
 				showCommandsList();
 			} catch(ParseException e) {
-				showDialog(getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()), null);
+				showDialog(getResources().getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()), null);
 			}
 		} else {
 			showEditor();
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 			fragmentCommandsList.setCurrentLine(currentLine);
 
 			prepareExecuting();
-		} else showDialog(getString(R.string.error), getString(R.string.commands_list_empty), null, null);
+		} else showDialog(getResources().getString(R.string.error), getResources().getString(R.string.commands_list_empty), null, null);
 	}
 
 	public void clickNextLine(View view) {
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
 	public void clickOpen(View view) {
 		if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited()) {
-			showDialog(getString(R.string.caution), getString(R.string.discard_changes), this::showOpenFileDialog, () -> {});
+			showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showOpenFileDialog, () -> {});
 		} else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED)
 			showOpenFileDialog();
 		else ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, OPEN_FILE_REQUEST_CODE);
@@ -171,14 +171,14 @@ public class MainActivity extends AppCompatActivity {
 		File startingFile = Environment.getExternalStorageDirectory();
 		if(!startingFile.exists())
 			startingFile = Environment.getDataDirectory();
-		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SAVE_AS, startingFile);
+		FileChooser fileChooser = new FileChooser(this, getResources().getString(R.string.choose_a_file), FileChooser.DialogType.SAVE_AS, startingFile);
 		fileChooser.setFilelistFilter("txt,c,cpp", true);
 		fileChooser.show(file -> {
 			try {
 				OutputStream fo = new FileOutputStream(file);
 				fo.write(fragmentEditor.getCode().getBytes());
 				fo.close();
-				Toast.makeText(getApplicationContext(), getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
 				fragmentEditor.setEdited(false);
 			} catch(IOException exception) {
 				exception.printStackTrace();
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 		File startingFile = Environment.getExternalStorageDirectory();
 		if(!startingFile.exists())
 			startingFile = Environment.getDataDirectory();
-		FileChooser fileChooser = new FileChooser(this, getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, startingFile);
+		FileChooser fileChooser = new FileChooser(this, getResources().getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, startingFile);
 		fileChooser.setFilelistFilter("txt,c,cpp", true);
 		fileChooser.show(file -> {
 			try {
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showExplanationDialog() {
-		showDialog(getString(R.string.caution), getString(R.string.permission_explanation), null, null);
+		showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.permission_explanation), null, null);
 	}
 
 	private void showDialog(String title, String content, @Nullable Runnable okCallback, @Nullable Runnable cancelCallback) {
@@ -244,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
 			fragmentCommandsList.setCurrentLine(currentLine);
 		} else if(currentFragment.getId() == fragmentEditor.getId()) {
 			if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
-				showDialog(getString(R.string.caution), getString(R.string.discard_changes), this::showCommandsList, () -> {});
+				showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showCommandsList, () -> {});
 			else showCommandsList();
 		} else if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
-			showDialog(getString(R.string.caution), getString(R.string.leave_unsaved), this::showCommandsList, super::onBackPressed);
+			showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.leave_unsaved), this::showCommandsList, super::onBackPressed);
 	}
 }
