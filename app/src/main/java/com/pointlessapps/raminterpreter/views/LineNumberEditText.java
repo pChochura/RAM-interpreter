@@ -16,34 +16,31 @@ import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineNumberEditText extends AppCompatEditText {
 
-	private static final Pattern PATTERN_ADDRESS = Pattern.compile(
-			"([*=]?\\d+)");
-	private static final Pattern PATTERN_LABELS = Pattern.compile(
-			"(\\w+:)");
-	private static final Pattern PATTERN_KEYWORDS = Pattern.compile(
-			"\\b(READ|LOAD|WRITE|JUMP|JZERO|JGTZ|SUB|ADD|MULT|DIV|HALT|STORE)\\b");
-	private static final Pattern PATTERN_COMMENTS = Pattern.compile(
-			"([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
+	private static final Pattern PATTERN_ADDRESS = Pattern.compile("([*=]?\\d+)");
+	private static final Pattern PATTERN_LABELS = Pattern.compile("(\\w+:)");
+	private static final Pattern PATTERN_KEYWORDS = Pattern.compile("\\b(READ|LOAD|WRITE|JUMP|JZERO|JGTZ|SUB|ADD|MULT|DIV|HALT|STORE)\\b");
+	private static final Pattern PATTERN_COMMENTS = Pattern.compile("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
 
 	private final Handler updateHandler = new Handler();
 	private final Runnable updateRunnable = () -> highlightWithoutChange(getText());
 
-	private int updateDelay = 100;
-	private int charWidth;
-	private int minPadding;
+	private final int updateDelay = 100;
+	private final int charWidth;
+	private final int minPadding;
+	private final Rect rect;
+	private final Paint paint;
 	private String prevText;
-	private Rect rect;
-	private Paint paint;
 
-	private int colorAddress;
-	private int colorLabel;
-	private int colorCommand;
-	private int colorComment;
+	private final int colorAddress;
+	private final int colorLabel;
+	private final int colorCommand;
+	private final int colorComment;
 
 	public LineNumberEditText(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -81,42 +78,21 @@ public class LineNumberEditText extends AppCompatEditText {
 
 	private void highlight(Editable e) {
 		try {
-			int length = e.length();
-			clearSpans(e, length);
+			clearSpans(e, e.length());
 
-			if(length == 0) return;
+			if(e.length() == 0) return;
 
-			for(Matcher m = PATTERN_ADDRESS.matcher(e); m.find(); ) {
-				e.setSpan(
-						new ForegroundColorSpan(colorAddress),
-						m.start(),
-						m.end(),
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
+			for(Matcher m = PATTERN_ADDRESS.matcher(e); m.find(); )
+				e.setSpan(new ForegroundColorSpan(colorAddress), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			for(Matcher m = PATTERN_LABELS.matcher(e); m.find(); ) {
-				e.setSpan(
-						new ForegroundColorSpan(colorLabel),
-						m.start(),
-						m.end(),
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
+			for(Matcher m = PATTERN_LABELS.matcher(e); m.find(); )
+				e.setSpan(new ForegroundColorSpan(colorLabel), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			for(Matcher m = PATTERN_KEYWORDS.matcher(e); m.find(); ) {
-				e.setSpan(
-						new ForegroundColorSpan(colorCommand),
-						m.start(),
-						m.end(),
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
+			for(Matcher m = PATTERN_KEYWORDS.matcher(e); m.find(); )
+				e.setSpan(new ForegroundColorSpan(colorCommand), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			for(Matcher m = PATTERN_COMMENTS.matcher(e); m.find(); ) {
-				e.setSpan(
-						new ForegroundColorSpan(colorComment),
-						m.start(),
-						m.end(),
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
+			for(Matcher m = PATTERN_COMMENTS.matcher(e); m.find(); )
+				e.setSpan(new ForegroundColorSpan(colorComment), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		} catch(IllegalStateException ignored) { }
 	}
 
@@ -125,7 +101,9 @@ public class LineNumberEditText extends AppCompatEditText {
 	}
 
 	private void recalculatePadding() {
-		prevText = getText().toString();
+		try {
+			prevText = Objects.requireNonNull(getText()).toString();
+		} catch(NullPointerException ignored) {}
 		int padding = ((int)Math.log10(getLineCount()) + 2) * charWidth;
 		setPadding(Math.max(padding, minPadding), getPaddingTop(), getPaddingRight(), getPaddingBottom());
 	}
@@ -137,8 +115,10 @@ public class LineNumberEditText extends AppCompatEditText {
 			canvas.drawText(String.format(Locale.getDefault(), "%d:", i + 1), rect.left + 5, baseline, paint);
 			baseline += getLineHeight();
 		}
-		if(!getText().toString().equals(prevText))
-			recalculatePadding();
+		try {
+			if(!Objects.requireNonNull(getText()).toString().equals(prevText))
+				recalculatePadding();
+		} catch(NullPointerException ignored) {}
 		super.onDraw(canvas);
 	}
 }

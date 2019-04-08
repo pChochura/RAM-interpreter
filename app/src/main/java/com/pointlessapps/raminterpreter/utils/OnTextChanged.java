@@ -5,7 +5,7 @@ import android.text.TextWatcher;
 
 public class OnTextChanged implements TextWatcher {
 
-	private OnTextChangedListener onTextChangedListener;
+	private final OnTextChangedListener onTextChangedListener;
 
 	public OnTextChanged(OnTextChangedListener onTextChangedListener) {
 		this.onTextChangedListener = onTextChangedListener;

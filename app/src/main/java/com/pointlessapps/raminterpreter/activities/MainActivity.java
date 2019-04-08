@@ -37,15 +37,16 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 
 public class MainActivity extends AppCompatActivity {
 
-	private Executor executor;
-	private int SAVE_FILE_REQUEST_CODE = 1;
-	private int OPEN_FILE_REQUEST_CODE = 2;
+	private final int SAVE_FILE_REQUEST_CODE = 1;
+	private final int OPEN_FILE_REQUEST_CODE = 2;
 
+	private Executor executor;
 	private int currentLine;
 	private Fragment currentFragment;
 	private FragmentEditor fragmentEditor;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 				fragmentEditor.saveCommands();
 				showCommandsList();
 			} catch(ParseException e) {
-				showDialog(getResources().getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()), null);
+				showDialog(getResources().getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()));
 			}
 		} else {
 			showEditor();
@@ -107,7 +108,9 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void clickNextLine(View view) {
-		executor.processInput(((AppCompatEditText)findViewById(R.id.input)).getText().toString());
+		try {
+			executor.processInput(Objects.requireNonNull(((AppCompatEditText)findViewById(R.id.input)).getText()).toString());
+		} catch(NullPointerException ignored) {}
 		currentLine = executor.executeCommandAtIndex(currentLine);
 		fragmentCommandsList.setCurrentLine(currentLine);
 		registersListAdapter.notifyDataSetChanged();
@@ -225,6 +228,25 @@ public class MainActivity extends AppCompatActivity {
 			else dialog.findViewById(R.id.buttonCancelContainer).setOnClickListener(v -> {
 				cancelCallback.run();
 				dialog.dismiss();
+			});
+			dialog.setOnCancelListener(d -> {
+				if(cancelCallback != null) cancelCallback.run();
+			});
+		}, Utils.UNDEFINED_WINDOW_SIZE, ViewGroup.LayoutParams.WRAP_CONTENT);
+	}
+
+	private void showDialog(String title, String content, @Nullable Runnable callback) {
+		Utils.makeDialog(this, R.layout.dialog_simple, dialog -> {
+			((AppCompatTextView)dialog.findViewById(R.id.title)).setText(title);
+			((AppCompatTextView)dialog.findViewById(R.id.content)).setText(content);
+
+			dialog.findViewById(R.id.buttonOKContainer).setOnClickListener(v -> {
+				if(callback != null) callback.run();
+				dialog.dismiss();
+			});
+			dialog.findViewById(R.id.buttonCancelContainer).setVisibility(View.GONE);
+			dialog.setOnCancelListener(d -> {
+				if(callback != null) callback.run();
 			});
 		}, Utils.UNDEFINED_WINDOW_SIZE, ViewGroup.LayoutParams.WRAP_CONTENT);
 	}

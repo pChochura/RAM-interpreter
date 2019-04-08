@@ -5,7 +5,7 @@
     <string name="address">Adres</string>
     <string name="comment">Komentarz</string>
     <string name="register">Rejestr %d</string>
-    <string name="input">Wejście (1, 2,...)</string>
+    <string name="input">Wejście (1, 2,…)</string>
     <string name="next_line">Dalej</string>
     <string name="output">Wyjście</string>
     <string name="exception_address_spelling">Adres \"%s\" nie może się tam znajdować. W linii: %d</string>

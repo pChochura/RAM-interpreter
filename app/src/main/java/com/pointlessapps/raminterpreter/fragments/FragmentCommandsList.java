@@ -14,7 +14,6 @@ import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.CommandsListAdapter;
 import com.pointlessapps.raminterpreter.models.Command;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FragmentCommandsList extends Fragment {

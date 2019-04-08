@@ -13,12 +13,12 @@ import com.pointlessapps.raminterpreter.R;
 
 public class RegistersListAdapter extends RecyclerView.Adapter<RegistersListAdapter.DataObjectHolder> {
 
-	private SparseIntArray registers;
+	private final SparseIntArray registers;
 	private Context context;
 
 	class DataObjectHolder extends RecyclerView.ViewHolder {
 
-		AppCompatTextView title, value;
+		final AppCompatTextView title, value;
 
 		DataObjectHolder(View itemView) {
 			super(itemView);

@@ -21,6 +21,7 @@ import com.pointlessapps.raminterpreter.utils.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FragmentEditor extends Fragment {
 
@@ -143,7 +144,11 @@ public class FragmentEditor extends Fragment {
 	}
 
 	public String getCode() {
-		return ((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText().toString();
+		try {
+			return Objects.requireNonNull(((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText()).toString();
+		} catch(NullPointerException ex) {
+			return null;
+		}
 	}
 
 	public void setCode(String code) {
@@ -163,11 +168,13 @@ public class FragmentEditor extends Fragment {
 	public void setAtLine(int lineIndex) {
 		if(lineIndex != -1) {
 			LineNumberEditText editor = rootView.findViewById(R.id.commandsEditor);
-			String text = editor.getText().toString();
-			int charIndex = 0;
-			for(int i = 0; i < lineIndex - 1; i++)
-				charIndex = text.indexOf('\n', charIndex) + 1;
-			editor.setSelection(charIndex);
+			try {
+				String text = Objects.requireNonNull(editor.getText()).toString();
+				int charIndex = 0;
+				for(int i = 0; i < lineIndex - 1; i++)
+					charIndex = text.indexOf('\n', charIndex) + 1;
+				editor.setSelection(charIndex);
+			} catch(NullPointerException ignored) {}
 		}
 	}
 }

@@ -29,16 +29,16 @@ public class Command {
 
 	public static final List<String> keyWords = Arrays.asList(COMMAND.getAll());
 
-	private static Pattern commentRegex = Pattern.compile("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
-	private static Pattern jumpAddressRegex = Pattern.compile("(\\w+)");
-	private static Pattern registerAddressRegex = Pattern.compile("([*=]?\\d+)");
+	private static final Pattern commentRegex = Pattern.compile("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
+	private static final Pattern jumpAddressRegex = Pattern.compile("(\\w+)");
+	private static final Pattern registerAddressRegex = Pattern.compile("([*=]?\\d+)");
 
 	private String label;
 	private String command;
 	private String address;
 	private String comment;
 	private boolean selected;
-	private int id;
+	private final int id;
 
 	public Command() {
 		this("", "", "", "");

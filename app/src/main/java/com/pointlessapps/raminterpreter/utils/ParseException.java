@@ -4,7 +4,7 @@ import java.util.Locale;
 
 public class ParseException extends Exception {
 
-	private int lineIndex;
+	private final int lineIndex;
 
 	public ParseException(String string, String word) {
 		super(String.format(Locale.getDefault(), string, word));

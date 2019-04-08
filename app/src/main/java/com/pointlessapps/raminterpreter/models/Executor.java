@@ -10,11 +10,11 @@ import java.util.Map;
 
 public class Executor {
 
-	private Map<String, Integer> labelIndexes;
-	private SparseIntArray registers;
-	private List<Command> commands;
+	private final SparseIntArray registers;
+	private final List<Command> commands;
+	private final List<Integer> input;
 
-	private List<Integer> input;
+	private Map<String, Integer> labelIndexes;
 	private String output;
 
 	private boolean isExecuting;
@@ -102,7 +102,7 @@ public class Executor {
 				registers.put(0, registers.get(0) * value);
 			} else if(command.equals(Command.COMMAND.READ.toString())) {
 				int address = decodeAddress(c.getAddress());
-				if(input != null && input.size() > 0) registers.put(address, input.remove(0));
+				if(input.size() > 0) registers.put(address, input.remove(0));
 				else registers.put(address, (int)(Math.random() * 100));
 			} else if(command.equals(Command.COMMAND.WRITE.toString())) {
 				int value = decodeValue(c.getAddress());

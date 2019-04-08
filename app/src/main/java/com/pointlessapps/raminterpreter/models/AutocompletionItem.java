@@ -9,10 +9,6 @@ public class AutocompletionItem {
 		return text;
 	}
 
-	public String getMatching() {
-		return matching;
-	}
-
 	public void setText(String text) {
 		this.text = text;
 	}

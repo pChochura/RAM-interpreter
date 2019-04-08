@@ -15,14 +15,14 @@ import java.util.List;
 
 public class CommandsListAdapter extends RecyclerView.Adapter<CommandsListAdapter.DataObjectHolder> {
 
-	private List<Command> commands;
+	private final List<Command> commands;
+	private final int[] colors;
 	private Context context;
-	private int[] colors;
 
 	class DataObjectHolder extends RecyclerView.ViewHolder {
 
-		AppCompatTextView label, command, address, comment;
-		ViewGroup bg;
+		final AppCompatTextView label, command, address, comment;
+		final ViewGroup bg;
 
 		DataObjectHolder(View itemView) {
 			super(itemView);

@@ -10,18 +10,17 @@ import android.view.ViewGroup;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.models.AutocompletionItem;
-import com.pointlessapps.raminterpreter.models.Command;
 
 import java.util.List;
 
 public class AutocompletionListAdapter extends RecyclerView.Adapter<AutocompletionListAdapter.DataObjectHolder> {
 
-	private List<AutocompletionItem> items;
+	private final List<AutocompletionItem> items;
 	private OnClickListener onClickListener;
 
 	class DataObjectHolder extends RecyclerView.ViewHolder {
 
-		AppCompatTextView text;
+		final AppCompatTextView text;
 
 		DataObjectHolder(View itemView) {
 			super(itemView);
