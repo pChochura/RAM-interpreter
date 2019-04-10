@@ -15,6 +15,7 @@ import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.AutocompletionListAdapter;
 import com.pointlessapps.raminterpreter.models.AutocompletionItem;
 import com.pointlessapps.raminterpreter.models.Command;
+import com.pointlessapps.raminterpreter.models.Parser;
 import com.pointlessapps.raminterpreter.views.LineNumberEditText;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 import com.pointlessapps.raminterpreter.utils.ParseException;
@@ -132,7 +133,7 @@ public class FragmentEditor extends Fragment {
 	public void saveCommands() throws ParseException {
 		Editable text = ((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText();
 		if(text != null) {
-			List<Command> temp = Command.getCommandsList(text.toString(), getContext());
+			List<Command> temp = Parser.formatAsList(getContext(), text.toString());
 			commands.clear();
 			commands.addAll(temp);
 		}
@@ -143,6 +144,7 @@ public class FragmentEditor extends Fragment {
 			((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).setText(code);
 	}
 
+	@Nullable
 	public String getCode() {
 		try {
 			return Objects.requireNonNull(((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText()).toString();

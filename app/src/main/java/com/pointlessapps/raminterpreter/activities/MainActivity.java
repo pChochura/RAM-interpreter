@@ -22,13 +22,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.ihhira.android.filechooser.FileChooser;
-import com.pointlessapps.raminterpreter.ExecuteAsync;
+import com.pointlessapps.raminterpreter.async.ExecuteAsync;
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.RegistersListAdapter;
 import com.pointlessapps.raminterpreter.fragments.FragmentCommandsList;
 import com.pointlessapps.raminterpreter.fragments.FragmentEditor;
 import com.pointlessapps.raminterpreter.models.Command;
 import com.pointlessapps.raminterpreter.models.Executor;
+import com.pointlessapps.raminterpreter.models.Parser;
 import com.pointlessapps.raminterpreter.utils.ParseException;
 import com.pointlessapps.raminterpreter.utils.Utils;
 
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 	private FragmentEditor fragmentEditor;
 	private FragmentCommandsList fragmentCommandsList;
 	private RegistersListAdapter registersListAdapter;
+	private ExecuteAsync executeAsync;
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -113,9 +115,9 @@ public class MainActivity extends AppCompatActivity {
 		} else showDialog(getResources().getString(R.string.error), getResources().getString(R.string.commands_list_empty), null, null);
 	}
 
-	private void clickRun() {
+	public void clickRun() {
 		try {
-			new ExecuteAsync(new ExecuteAsync.AsyncListener() {
+			executeAsync = new ExecuteAsync(new ExecuteAsync.AsyncListener() {
 				@Override public void onPreExecute() {
 					findViewById(R.id.buttonLoader).setVisibility(View.VISIBLE);
 				}
@@ -135,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
 					findViewById(R.id.buttonLoader).setVisibility(View.GONE);
 					refreshAfterExecuting();
 				}
-			}).execute(Objects.requireNonNull(((AppCompatEditText)findViewById(R.id.input)).getText()).toString());
+			});
+			executeAsync.execute(Objects.requireNonNull(((AppCompatEditText)findViewById(R.id.input)).getText()).toString());
 		} catch(NullPointerException ignored) {}
 	}
 
@@ -159,6 +162,10 @@ public class MainActivity extends AppCompatActivity {
 		} else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED)
 			showOpenFileDialog();
 		else ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, OPEN_FILE_REQUEST_CODE);
+	}
+
+	public void clickFormatOutput(View view) {
+
 	}
 
 	private void refreshAfterExecuting() {
@@ -247,11 +254,13 @@ public class MainActivity extends AppCompatActivity {
 				StringBuilder builder = new StringBuilder();
 				String line;
 				while((line = br.readLine()) != null) builder.append(line).append("\n");
-				fragmentEditor.setCode(builder.toString());
+				fragmentEditor.setCode(Parser.formatCode(getApplicationContext(), builder.toString()));
 
 				br.close();
 			} catch(IOException e) {
 				e.printStackTrace();
+			} catch(ParseException e) {
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
@@ -304,16 +313,25 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override public void onBackPressed() {
-		if(executor.isExecuting()) {
-			currentLine = -1;
-			executor.cancel();
-			prepareExecuting();
-			fragmentCommandsList.setCurrentLine(currentLine);
-		} else if(currentFragment.getId() == fragmentEditor.getId()) {
-			if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
-				showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showCommandsList, () -> {});
-			else showCommandsList();
-		} else if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited())
-			showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.leave_unsaved), this::showCommandsList, super::onBackPressed);
+		try {
+			if(executor.isExecuting()) {
+				if(executeAsync != null)
+					executeAsync.cancel(true);
+				findViewById(R.id.buttonLoader).setVisibility(View.GONE);
+				currentLine = -1;
+				executor.cancel();
+				prepareExecuting();
+				fragmentCommandsList.setExecuting(executor.isExecuting());
+				fragmentCommandsList.setCurrentLine(currentLine);
+			} else if(currentFragment.getId() == fragmentEditor.getId()) {
+				if(!Objects.requireNonNull(fragmentEditor.getCode()).isEmpty() && fragmentEditor.isEdited())
+					showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showCommandsList, () -> {});
+				else showCommandsList();
+			} else if(!Objects.requireNonNull(fragmentEditor.getCode()).isEmpty() && fragmentEditor.isEdited())
+				showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.leave_unsaved), super::onBackPressed, () -> {});
+			else super.onBackPressed();
+		} catch(Exception e) {
+			super.onBackPressed();
+		}
 	}
 }

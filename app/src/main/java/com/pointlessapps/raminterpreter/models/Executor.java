@@ -40,7 +40,7 @@ public class Executor {
 	public void processInput(String text) {
 		this.input.clear();
 		if(!text.isEmpty()) {
-			String[] numbers = text.replaceAll("\\s+", "").split(",");
+			String[] numbers = text.replaceAll("[^0-9,]", "").split(",");
 			for(String number : numbers) {
 				String input = number.replaceAll(",", "");
 				if(!input.isEmpty()) this.input.add(Integer.parseInt(input));
@@ -77,7 +77,7 @@ public class Executor {
 				if(labelIndex != null)
 					index = labelIndex - 1;
 			} else if(command.equals(Command.COMMAND.JGTZ.toString())) {
-				if(registers.get(0) != 0 && labelIndex != null)
+				if(registers.get(0) > 0 && labelIndex != null)
 					index = labelIndex - 1;
 			} else if(command.equals(Command.COMMAND.JZERO.toString())) {
 				if(registers.get(0) == 0 && labelIndex != null)

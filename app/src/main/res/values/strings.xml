@@ -8,7 +8,6 @@
     <string name="input">Input (1, 2,…)</string>
     <string name="next_line">Next line</string>
     <string name="output">Output</string>
-    <string name="exception_comments">Comments have to be surrounded by \" or \', at line: %d</string>
     <string name="exception_halt_missing">Command \"%s\" is missing</string>
     <string name="exception_label_empty">Labels cannot be empty, at line: %d</string>
     <string name="exception_label_multiple">You cannot have more than one label, at line: %d</string>
@@ -28,4 +27,5 @@
     <string name="parsing_error">Parsing error!</string>
     <string name="error">Error!</string>
     <string name="leave_unsaved">Do you want to leave without saving?</string>
+    <string name="not_formatted">The code could not be formatted.</string>
 </resources>

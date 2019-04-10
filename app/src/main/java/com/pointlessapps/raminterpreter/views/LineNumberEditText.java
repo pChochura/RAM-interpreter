@@ -11,9 +11,12 @@ import android.text.Editable;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
+import android.widget.Toast;
 
 import com.pointlessapps.raminterpreter.R;
+import com.pointlessapps.raminterpreter.models.Parser;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
+import com.pointlessapps.raminterpreter.utils.ParseException;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -22,10 +25,10 @@ import java.util.regex.Pattern;
 
 public class LineNumberEditText extends AppCompatEditText {
 
-	private static final Pattern PATTERN_ADDRESS = Pattern.compile("([*=]?\\d+)");
+	private static final Pattern PATTERN_ADDRESS = Pattern.compile("(?<=[ ])([*=]?[-]?\\d+)(?![\\w#])");
 	private static final Pattern PATTERN_LABELS = Pattern.compile("(\\w+:)");
 	private static final Pattern PATTERN_KEYWORDS = Pattern.compile("\\b(READ|LOAD|WRITE|JUMP|JZERO|JGTZ|SUB|ADD|MULT|DIV|HALT|STORE)\\b");
-	private static final Pattern PATTERN_COMMENTS = Pattern.compile("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
+	private static final Pattern PATTERN_COMMENTS = Pattern.compile("#.*");
 
 	private final Handler updateHandler = new Handler();
 	private final Runnable updateRunnable = () -> highlightWithoutChange(getText());
@@ -67,7 +70,19 @@ public class LineNumberEditText extends AppCompatEditText {
 		}));
 	}
 
-	private static void clearSpans(Editable e, int length) {
+	@Override
+	public boolean onTextContextMenuItem(int id) {
+		boolean consumed = super.onTextContextMenuItem(id);
+		if(id == android.R.id.paste) try {
+			setText(Parser.formatCode(getContext(), Objects.requireNonNull(getText()).toString()));
+		} catch(ParseException e) {
+			Toast.makeText(getContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
+			e.printStackTrace();
+		}
+		return consumed;
+	}
+
+	private void clearSpans(Editable e, int length) {
 		ForegroundColorSpan spans[] = e.getSpans(0, length, ForegroundColorSpan.class);
 		for(int i = spans.length; i-- > 0; ) e.removeSpan(spans[i]);
 	}
