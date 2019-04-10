@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.ihhira.android.filechooser.FileChooser;
+import com.pointlessapps.raminterpreter.ExecuteAsync;
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.RegistersListAdapter;
 import com.pointlessapps.raminterpreter.fragments.FragmentCommandsList;
@@ -87,8 +88,12 @@ public class MainActivity extends AppCompatActivity {
 				showDialog(getResources().getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()));
 			}
 		} else {
-			showEditor();
-			fragmentEditor.setCode(Command.getStringList(executor.getCommands()));
+			if(executor.isExecuting()) {
+				clickRun();
+			} else {
+				showEditor();
+				fragmentEditor.setCode(Command.getStringList(executor.getCommands()));
+			}
 		}
 
 		TransitionManager.beginDelayedTransition(findViewById(R.id.bg), new AutoTransition());
@@ -102,9 +107,36 @@ public class MainActivity extends AppCompatActivity {
 			setInput();
 			registersListAdapter.notifyDataSetChanged();
 			fragmentCommandsList.setCurrentLine(currentLine);
+			fragmentCommandsList.setExecuting(executor.isExecuting());
 
 			prepareExecuting();
 		} else showDialog(getResources().getString(R.string.error), getResources().getString(R.string.commands_list_empty), null, null);
+	}
+
+	private void clickRun() {
+		try {
+			new ExecuteAsync(new ExecuteAsync.AsyncListener() {
+				@Override public void onPreExecute() {
+					findViewById(R.id.buttonLoader).setVisibility(View.VISIBLE);
+				}
+
+				@Override public String onExecuteLine(String input) {
+					executor.processInput(input);
+					currentLine = executor.executeCommandAtIndex(currentLine);
+					fragmentCommandsList.setExecuting(executor.isExecuting());
+					return executor.getInput();
+				}
+
+				@Override public boolean onConditionCheck() {
+					return executor.isExecuting() && !executor.getCommands().get(currentLine).isBreakpoint();
+				}
+
+				@Override public void onPostExecute() {
+					findViewById(R.id.buttonLoader).setVisibility(View.GONE);
+					refreshAfterExecuting();
+				}
+			}).execute(Objects.requireNonNull(((AppCompatEditText)findViewById(R.id.input)).getText()).toString());
+		} catch(NullPointerException ignored) {}
 	}
 
 	public void clickNextLine(View view) {
@@ -112,14 +144,7 @@ public class MainActivity extends AppCompatActivity {
 			executor.processInput(Objects.requireNonNull(((AppCompatEditText)findViewById(R.id.input)).getText()).toString());
 		} catch(NullPointerException ignored) {}
 		currentLine = executor.executeCommandAtIndex(currentLine);
-		fragmentCommandsList.setCurrentLine(currentLine);
-		registersListAdapter.notifyDataSetChanged();
-		setInput();
-		setOutput();
-
-		((RecyclerView)findViewById(R.id.commandsList)).scrollToPosition(currentLine);
-
-		if(!executor.isExecuting()) prepareExecuting();
+		refreshAfterExecuting();
 	}
 
 	public void clickSave(View view) {
@@ -136,12 +161,32 @@ public class MainActivity extends AppCompatActivity {
 		else ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, OPEN_FILE_REQUEST_CODE);
 	}
 
+	private void refreshAfterExecuting() {
+		fragmentCommandsList.setCurrentLine(currentLine);
+		fragmentCommandsList.setExecuting(executor.isExecuting());
+		registersListAdapter.notifyDataSetChanged();
+
+		setInput();
+		setOutput();
+
+		((RecyclerView)findViewById(R.id.commandsList)).scrollToPosition(currentLine);
+
+		if(!executor.isExecuting()) {
+			prepareExecuting();
+			showOutput();
+		}
+	}
+
 	private void prepareExecuting() {
 		findViewById(R.id.buttonPlay).setVisibility(executor.isExecuting() ? View.GONE : View.VISIBLE);
-		findViewById(R.id.buttonEdit).setVisibility(executor.isExecuting() ? View.GONE : View.VISIBLE);
 		findViewById(R.id.navigatorContainer).setVisibility(executor.isExecuting() ? View.VISIBLE : View.GONE);
+		((AppCompatImageView)findViewById(R.id.buttonEdit)).setImageResource(executor.isExecuting() ? R.drawable.ic_play : R.drawable.ic_edit);
 
 		TransitionManager.beginDelayedTransition(findViewById(R.id.bg), new AutoTransition());
+	}
+
+	private void showOutput() {
+		showDialog(getResources().getString(R.string.output), executor.getOutput(), null);
 	}
 
 	private void setOutput() {

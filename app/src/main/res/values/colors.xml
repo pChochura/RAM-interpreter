@@ -17,4 +17,5 @@
     <color name="colorComment">#495D3B</color>
     <color name="colorCommand">#805869</color>
     <color name="colorLabel">#B66126</color>
+    <color name="colorBreakpoint">#D32F2F</color>
 </resources>

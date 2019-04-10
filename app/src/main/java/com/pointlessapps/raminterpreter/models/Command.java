@@ -38,6 +38,7 @@ public class Command {
 	private String address;
 	private String comment;
 	private boolean selected;
+	private boolean breakpoint;
 	private final int id;
 
 	public Command() {
@@ -50,6 +51,7 @@ public class Command {
 		this.address = address;
 		this.comment = comment;
 		this.selected = false;
+		this.breakpoint = false;
 		this.id = UUID.randomUUID().hashCode();
 	}
 
@@ -91,6 +93,14 @@ public class Command {
 
 	public boolean isSelected() {
 		return selected;
+	}
+
+	public boolean isBreakpoint() {
+		return breakpoint;
+	}
+
+	public void setBreakpoint(boolean breakpoint) {
+		this.breakpoint = breakpoint;
 	}
 
 	@Override public String toString() {

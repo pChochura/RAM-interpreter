@@ -22,6 +22,8 @@ public class FragmentCommandsList extends Fragment {
 	private List<Command> commands;
 	private CommandsListAdapter commandsListAdapter;
 
+	private boolean isExecuting;
+
 	@Nullable @Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		if(rootView == null) {
@@ -40,6 +42,13 @@ public class FragmentCommandsList extends Fragment {
 		commandsList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		commandsList.setAdapter(commandsListAdapter = new CommandsListAdapter(commands,
 				new int[]{getResources().getColor(R.color.colorDark), getResources().getColor(R.color.colorLight)}));
+		commandsListAdapter.setOnClickListener(position -> {
+			if(isExecuting) {
+				Command command = commands.get(position);
+				command.setBreakpoint(!command.isBreakpoint());
+				commandsListAdapter.notifyDataSetChanged();
+			}
+		});
 	}
 
 	public FragmentCommandsList setCommands(List<Command> commands) {
@@ -50,5 +59,12 @@ public class FragmentCommandsList extends Fragment {
 	public void setCurrentLine(int currentLine) {
 		for(int i = 0; i < commands.size(); i++) commands.get(i).setSelected(i == currentLine);
 		commandsListAdapter.notifyDataSetChanged();
+	}
+
+	public void setExecuting(boolean isExecuting) {
+		this.isExecuting = isExecuting;
+
+		if(!isExecuting) for(Command c : commands)
+			c.setBreakpoint(false);
 	}
 }
