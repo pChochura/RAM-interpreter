@@ -1,5 +1,6 @@
 package com.pointlessapps.raminterpreter.utils;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Point;
@@ -15,8 +16,8 @@ public class Utils {
 
 	public static final int UNDEFINED_WINDOW_SIZE = Integer.MAX_VALUE;
 
-	public static void makeDialog(Context context, @LayoutRes int layout, DataCallback<Dialog> callback, int... windowSize) {
-		Dialog dialog = new Dialog(context);
+	public static void makeDialog(Activity activity, @LayoutRes int layout, DataCallback<Dialog> callback, int... windowSize) {
+		Dialog dialog = new Dialog(activity);
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		Window window = dialog.getWindow();
 		if(window != null) {
@@ -25,11 +26,11 @@ public class Utils {
 			layoutParams.dimAmount = 0.5f;
 			dialog.getWindow().setAttributes(layoutParams);
 		}
-		Point size = getScreenSize(context);
-		int width = windowSize != null && windowSize.length > 0 && windowSize[0] != UNDEFINED_WINDOW_SIZE ? windowSize[0] : Math.min(dpToPx(context, 350), size.x - 150);
-		int height = windowSize != null && windowSize.length > 1 && windowSize[1] != UNDEFINED_WINDOW_SIZE ? windowSize[1] : Math.min(dpToPx(context, 500), size.y - 150);
+		Point size = getScreenSize(activity);
+		int width = windowSize != null && windowSize.length > 0 && windowSize[0] != UNDEFINED_WINDOW_SIZE ? windowSize[0] : Math.min(dpToPx(activity, 350), size.x - 150);
+		int height = windowSize != null && windowSize.length > 1 && windowSize[1] != UNDEFINED_WINDOW_SIZE ? windowSize[1] : Math.min(dpToPx(activity, 500), size.y - 150);
 		ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(width, height);
-		LayoutInflater inflater = LayoutInflater.from(context);
+		LayoutInflater inflater = LayoutInflater.from(activity);
 		View view = inflater.inflate(layout, null);
 		dialog.setContentView(view, layoutParams);
 		callback.run(dialog);

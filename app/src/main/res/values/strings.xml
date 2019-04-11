@@ -28,4 +28,6 @@
     <string name="error">Error!</string>
     <string name="leave_unsaved">Do you want to leave without saving?</string>
     <string name="not_formatted">The code could not be formatted.</string>
+    <string name="output_format">Output format</string>
+    <string name="output_format_help">Format registers: tab=2:5, a=5.</string>
 </resources>

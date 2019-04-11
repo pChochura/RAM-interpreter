@@ -16,6 +16,7 @@ public class Parser {
 	private static final Pattern commentRegex = Pattern.compile("#.*");
 	private static final Pattern jumpAddressRegex = Pattern.compile("(\\w+)");
 	private static final Pattern registerAddressRegex = Pattern.compile("([*=]?[-]?\\d+)");
+	private static final Pattern literalAddress = Pattern.compile("([=][-]?\\d+)");
 
 	public static List<Command> formatAsList(Context context, String code) throws ParseException {
 		boolean haltCommand = false;
@@ -73,6 +74,10 @@ public class Parser {
 
 				if(!command.getCommand().equals(Command.COMMAND.HALT.toString()) && command.getAddress().isEmpty())
 					throw new ParseException(context.getResources().getString(R.string.exception_address_empty), i + 1);
+
+				if(command.getCommand().equals(Command.COMMAND.READ.toString()) || command.getCommand().equals(Command.COMMAND.STORE.toString()))
+					if(literalAddress.matcher(command.getAddress()).matches())
+						throw new ParseException(context.getResources().getString(R.string.exception_address_spelling), command.getAddress(), i + 1);
 
 				if(command.getCommand().equals(Command.COMMAND.JZERO.toString()) || command.getCommand().equals(Command.COMMAND.JGTZ.toString()) || command.getCommand().equals(Command.COMMAND.JUMP.toString()))
 					jumpCommands.put(i, command);

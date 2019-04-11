@@ -15,7 +15,7 @@ public class Executor {
 	private final List<Integer> input;
 
 	private Map<String, Integer> labelIndexes;
-	private String output;
+	private Output output;
 
 	private boolean isExecuting;
 
@@ -24,6 +24,7 @@ public class Executor {
 		labelIndexes = new HashMap<>();
 		commands = new ArrayList<>();
 		input = new ArrayList<>();
+		output = new Output();
 		isExecuting = false;
 	}
 
@@ -40,7 +41,7 @@ public class Executor {
 	public void processInput(String text) {
 		this.input.clear();
 		if(!text.isEmpty()) {
-			String[] numbers = text.replaceAll("[^0-9,]", "").split(",");
+			String[] numbers = text.replaceAll("[^\\d,-]", "").split(",");
 			for(String number : numbers) {
 				String input = number.replaceAll(",", "");
 				if(!input.isEmpty()) this.input.add(Integer.parseInt(input));
@@ -51,7 +52,7 @@ public class Executor {
 	public void prepare() {
 		labelIndexes = getLabelIndexes();
 		isExecuting = true;
-		output = "";
+		output.clear();
 		input.clear();
 		clearRegisters();
 	}
@@ -106,7 +107,7 @@ public class Executor {
 				else registers.put(address, (int)(Math.random() * 100));
 			} else if(command.equals(Command.COMMAND.WRITE.toString())) {
 				int value = decodeValue(c.getAddress());
-				output += String.format(Locale.getDefault(), "%d, ", value);
+				output.addValue(decodeAddress(c.getAddress()), value);
 			}
 		}
 
@@ -143,7 +144,15 @@ public class Executor {
 	}
 
 	public String getOutput() {
-		return output;
+		return output.formatOutput(registers);
+	}
+
+	public String getRawOutput() {
+		return output.getOutput();
+	}
+
+	public void setOutput(String output) {
+		this.output.setOutput(output);
 	}
 
 	public boolean isExecuting() {

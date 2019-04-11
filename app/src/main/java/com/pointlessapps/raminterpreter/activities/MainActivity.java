@@ -157,15 +157,31 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void clickOpen(View view) {
-		if(!fragmentEditor.getCode().isEmpty() && fragmentEditor.isEdited()) {
-			showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showOpenFileDialog, () -> {});
-		} else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED)
-			showOpenFileDialog();
-		else ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, OPEN_FILE_REQUEST_CODE);
+		try {
+			if(!Objects.requireNonNull(fragmentEditor.getCode()).isEmpty() && fragmentEditor.isEdited()) {
+				showDialog(getResources().getString(R.string.caution), getResources().getString(R.string.discard_changes), this::showOpenFileDialog, () -> {
+				});
+			} else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED)
+				showOpenFileDialog();
+			else
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, OPEN_FILE_REQUEST_CODE);
+		} catch(NullPointerException ignored) {}
 	}
 
 	public void clickFormatOutput(View view) {
+		Utils.makeDialog(this, R.layout.dialog_input, dialog -> {
+			((AppCompatTextView)dialog.findViewById(R.id.title)).setText(getResources().getString(R.string.output));
+			((AppCompatEditText)dialog.findViewById(R.id.content)).setText(executor.getRawOutput());
 
+			dialog.findViewById(R.id.buttonOK).setOnClickListener(v -> {
+				try {
+					executor.setOutput(Objects.requireNonNull(((AppCompatEditText)dialog.findViewById(R.id.content)).getText()).toString());
+					setOutput();
+				} catch(NullPointerException ignored) {}
+				dialog.dismiss();
+			});
+			dialog.findViewById(R.id.buttonCancel).setOnClickListener(v -> dialog.dismiss());
+		}, Utils.UNDEFINED_WINDOW_SIZE, ViewGroup.LayoutParams.WRAP_CONTENT);
 	}
 
 	private void refreshAfterExecuting() {
@@ -193,7 +209,8 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showOutput() {
-		showDialog(getResources().getString(R.string.output), executor.getOutput(), null);
+		if(!executor.getOutput().isEmpty())
+			showDialog(getResources().getString(R.string.output), executor.getOutput(), null);
 	}
 
 	private void setOutput() {
@@ -248,10 +265,10 @@ public class MainActivity extends AppCompatActivity {
 		FileChooser fileChooser = new FileChooser(this, getResources().getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, startingFile);
 		fileChooser.setFilelistFilter("txt,c,cpp", true);
 		fileChooser.show(file -> {
+			StringBuilder builder = new StringBuilder();
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(file));
 
-				StringBuilder builder = new StringBuilder();
 				String line;
 				while((line = br.readLine()) != null) builder.append(line).append("\n");
 				fragmentEditor.setCode(Parser.formatCode(getApplicationContext(), builder.toString()));
@@ -261,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
 				e.printStackTrace();
 			} catch(ParseException e) {
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
+				fragmentEditor.setCode(builder.toString());
 			}
 		});
 	}
