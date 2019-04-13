@@ -50,16 +50,17 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintWidth_percent="0.9">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/autocompletionList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="vertical"
+            android:scrollbars="none"
+            android:overScrollMode="never"
             tools:itemCount="4"
             tools:listitem="@layout/autocompletion_list_item_view" />
 

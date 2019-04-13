@@ -1,36 +1,46 @@
 package com.pointlessapps.raminterpreter.fragments;
 
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.AutocompletionListAdapter;
 import com.pointlessapps.raminterpreter.models.AutocompletionItem;
 import com.pointlessapps.raminterpreter.models.Command;
+import com.pointlessapps.raminterpreter.models.Executor;
 import com.pointlessapps.raminterpreter.models.Parser;
+import com.pointlessapps.raminterpreter.utils.KeyboardHeightObserver;
+import com.pointlessapps.raminterpreter.utils.KeyboardHeightProvider;
 import com.pointlessapps.raminterpreter.views.LineNumberEditText;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 import com.pointlessapps.raminterpreter.utils.ParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-public class FragmentEditor extends Fragment {
+public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 
-	private ViewGroup rootView;
-	private List<AutocompletionItem> items;
-	private List<Command> commands;
 	private AutocompletionListAdapter autocompletionListAdapter;
+	private List<AutocompletionItem> items;
+	private ViewGroup rootView;
+	private Executor executor;
 	private String code;
+	private KeyboardHeightProvider keyboardHeightProvider;
 
 	private boolean edited;
 
@@ -40,13 +50,31 @@ public class FragmentEditor extends Fragment {
 
 			init();
 			setAutocompletion();
+
+			keyboardHeightProvider = new KeyboardHeightProvider(getActivity());
 		}
 		return rootView;
 	}
 
 	@Override public void onStart() {
 		super.onStart();
-		if(commands != null) setCode(Command.getStringList(commands));
+		if(executor != null) setCode(Command.getStringList(executor.getCommands()));
+		keyboardHeightProvider.start();
+	}
+
+	@Override public void onPause() {
+		super.onPause();
+		keyboardHeightProvider.setKeyboardHeightObserver(null);
+	}
+
+	@Override public void onResume() {
+		super.onResume();
+		keyboardHeightProvider.setKeyboardHeightObserver(this);
+	}
+
+	@Override public void onDestroy() {
+		super.onDestroy();
+		keyboardHeightProvider.close();
 	}
 
 	private void init() {
@@ -67,6 +95,8 @@ public class FragmentEditor extends Fragment {
 				}
 			}
 		});
+
+		rootView.findViewById(R.id.commandsEditor).getViewTreeObserver().addOnScrollChangedListener(this::updateAutocompletionPosition);
 	}
 
 	private void setAutocompletion() {
@@ -98,7 +128,18 @@ public class FragmentEditor extends Fragment {
 		if(items != null)
 			this.items.addAll(items);
 		autocompletionListAdapter.notifyDataSetChanged();
+
 		rootView.findViewById(R.id.autocompletionContainer).setVisibility(items == null || items.isEmpty() ? View.GONE : View.VISIBLE);
+
+		updateAutocompletionPosition();
+	}
+
+	private void updateAutocompletionPosition() {
+		Point pos = rootView.<LineNumberEditText>findViewById(R.id.commandsEditor).getCursorPosition();
+		View container = rootView.findViewById(R.id.autocompletionContainer);
+		int height = container.getHeight();
+		int screenHeight = ((ViewGroup)container.getParent()).getHeight();
+		container.setY(Math.max(Math.min(pos.y, screenHeight - height), 0));
 	}
 
 	private int getStartWordIndex(Editable editorText, int selection) {
@@ -113,29 +154,48 @@ public class FragmentEditor extends Fragment {
 
 	private List<AutocompletionItem> getMatching(String text) {
 		List<AutocompletionItem> matching = new ArrayList<>();
-		if(!text.isEmpty())
-			for(String s : Command.keyWords)
+		if(!text.isEmpty()) {
+			for(String s : Command.keyWords) {
 				if(s.toLowerCase().contains(text.toLowerCase())) {
 					AutocompletionItem item = new AutocompletionItem();
 					item.setText(s);
-					item.setMatching(text.toLowerCase());
+					item.setMatching(text);
+					item.setDescription(getResources().getString(R.string.command));
 					matching.add(item);
 				}
+			}
+
+			try {
+				saveCommands(false);
+				Map<String, Integer> labelIndexes = executor.getLabelIndexes();
+				for(String label : labelIndexes.keySet()) {
+					if(label.toLowerCase().contains(text.toLowerCase())) {
+						AutocompletionItem item = new AutocompletionItem();
+						item.setText(label);
+						item.setMatching(text);
+						item.setDescription(getResources().getString(R.string.label));
+						matching.add(item);
+					}
+				}
+			} catch(ParseException ignored) { }
+		}
+
+		Collections.sort(matching, AutocompletionItem.ItemComparator);
 		return matching;
 	}
 
-	public FragmentEditor setCommands(List<Command> commands) {
-		this.commands = commands;
-		this.code = Command.getStringList(commands);
+	public FragmentEditor setExecutor(Executor executor) {
+		this.executor = executor;
+		this.code = Command.getStringList(executor.getCommands());
 		return this;
 	}
 
-	public void saveCommands() throws ParseException {
+	public void saveCommands(boolean throwable) throws ParseException {
 		Editable text = ((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText();
 		if(text != null) {
-			List<Command> temp = Parser.formatAsList(getContext(), text.toString());
-			commands.clear();
-			commands.addAll(temp);
+			List<Command> temp = Parser.formatAsList(getContext(), text.toString(), throwable);
+			executor.getCommands().clear();
+			executor.getCommands().addAll(temp);
 		}
 	}
 
@@ -144,8 +204,7 @@ public class FragmentEditor extends Fragment {
 			((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).setText(code);
 	}
 
-	@Nullable
-	public String getCode() {
+	@Nullable public String getCode() {
 		try {
 			return Objects.requireNonNull(((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).getText()).toString();
 		} catch(NullPointerException ex) {
@@ -178,5 +237,9 @@ public class FragmentEditor extends Fragment {
 				editor.setSelection(charIndex);
 			} catch(NullPointerException ignored) {}
 		}
+	}
+
+	@Override public void onKeyboardHeightChanged(int height, int orientation) {
+		((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).adjustMinHeight(height);
 	}
 }

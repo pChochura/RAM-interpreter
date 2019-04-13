@@ -28,7 +28,7 @@ public class Executor {
 		isExecuting = false;
 	}
 
-	private Map<String, Integer> getLabelIndexes() {
+	public Map<String, Integer> getLabelIndexes() {
 		Map<String, Integer> labelIndexes = new HashMap<>();
 		for(int i = 0; i < commands.size(); i++) {
 			String label = commands.get(i).getLabel();

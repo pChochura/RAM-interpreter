@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 		registersList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
 		registersList.setAdapter(registersListAdapter = new RegistersListAdapter(executor.getRegisters()));
 		fragmentCommandsList = new FragmentCommandsList().setCommands(executor.getCommands());
-		fragmentEditor = new FragmentEditor().setCommands(executor.getCommands());
+		fragmentEditor = new FragmentEditor().setExecutor(executor);
 	}
 
 	private void switchFragment(Fragment fragment) {
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 	public void clickEdit(View view) {
 		if(currentFragment.getId() == fragmentEditor.getId()) {
 			try {
-				fragmentEditor.saveCommands();
+				fragmentEditor.saveCommands(true);
 				showCommandsList();
 			} catch(ParseException e) {
 				showDialog(getResources().getString(R.string.parsing_error), e.getLocalizedMessage(), () -> fragmentEditor.setAtLine(e.getLineIndex()));

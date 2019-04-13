@@ -3,11 +3,14 @@ package com.pointlessapps.raminterpreter.views;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
@@ -18,7 +21,6 @@ import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.models.Parser;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 import com.pointlessapps.raminterpreter.utils.ParseException;
-import com.pointlessapps.raminterpreter.utils.Utils;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -71,10 +73,7 @@ public class LineNumberEditText extends AppCompatEditText {
 			updateHandler.postDelayed(updateRunnable, updateDelay);
 		}));
 
-		post(() -> {
-			setMinHeight(((ViewGroup)getParent().getParent()).getHeight() - 2 * getResources().getDimensionPixelOffset(R.dimen.dividerHeight));
-			requestLayout();
-		});
+		adjustMinHeight(0);
 	}
 
 	private void clearSpans(Editable e, int length) {
@@ -116,6 +115,27 @@ public class LineNumberEditText extends AppCompatEditText {
 		} catch(NullPointerException ignored) {}
 		int padding = ((int)Math.log10(getLineCount()) + 2) * charWidth;
 		setPadding(Math.max(padding, minPadding), getPaddingTop(), getPaddingRight(), getPaddingBottom());
+	}
+
+	public void adjustMinHeight(int offset) {
+		post(() -> {
+			setMinHeight(((ViewGroup)getParent().getParent()).getHeight() - 2 * getResources().getDimensionPixelOffset(R.dimen.dividerHeight) - offset);
+			requestLayout();
+		});
+	}
+
+	public Point getCursorPosition() {
+		int x = 0, y = 0;
+		int pos = getSelectionStart();
+		Layout layout = getLayout();
+		if(layout != null) {
+			int line = layout.getLineForOffset(pos);
+			int baseline = layout.getLineBaseline(line);
+			int ascent = layout.getLineAscent(line);
+			x = (int)layout.getPrimaryHorizontal(pos);
+			y = baseline + ascent + 2 * getLineHeight() - ((NestedScrollView)getParent().getParent()).getScrollY();
+		}
+		return new Point(x, y);
 	}
 
 	@Override public boolean onTextContextMenuItem(int id) {

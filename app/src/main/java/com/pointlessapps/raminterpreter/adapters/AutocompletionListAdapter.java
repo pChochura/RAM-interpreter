@@ -21,12 +21,14 @@ public class AutocompletionListAdapter extends RecyclerView.Adapter<Autocompleti
 	class DataObjectHolder extends RecyclerView.ViewHolder {
 
 		final AppCompatTextView text;
+		final AppCompatTextView description;
 
 		DataObjectHolder(View itemView) {
 			super(itemView);
 
 			text = itemView.findViewById(R.id.text);
-			text.setOnClickListener(v -> onClickListener.onClick(text.getText().toString()));
+			description = itemView.findViewById(R.id.description);
+			itemView.findViewById(R.id.bg).setOnClickListener(v -> onClickListener.onClick(text.getText().toString()));
 		}
 	}
 
@@ -52,6 +54,7 @@ public class AutocompletionListAdapter extends RecyclerView.Adapter<Autocompleti
 	@Override
 	public void onBindViewHolder(@NonNull DataObjectHolder holder, int position) {
 		holder.text.setText(Html.fromHtml(items.get(position).getFormatted()));
+		holder.description.setText(items.get(position).getDescription());
 	}
 
 	@Override
