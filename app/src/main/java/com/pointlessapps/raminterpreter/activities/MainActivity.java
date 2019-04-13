@@ -248,11 +248,11 @@ public class MainActivity extends AppCompatActivity {
 		fileChooser.show(file -> {
 			try {
 				OutputStream fo = new FileOutputStream(file);
-				fo.write(fragmentEditor.getCode().getBytes());
+				fo.write(Objects.requireNonNull(fragmentEditor.getCode()).getBytes());
 				fo.close();
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
 				fragmentEditor.setEdited(false);
-			} catch(IOException exception) {
+			} catch(NullPointerException | IOException exception) {
 				exception.printStackTrace();
 			}
 		});

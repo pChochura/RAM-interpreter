@@ -11,12 +11,14 @@ import android.text.Editable;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.models.Parser;
 import com.pointlessapps.raminterpreter.utils.OnTextChanged;
 import com.pointlessapps.raminterpreter.utils.ParseException;
+import com.pointlessapps.raminterpreter.utils.Utils;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -68,18 +70,11 @@ public class LineNumberEditText extends AppCompatEditText {
 			cancelUpdate();
 			updateHandler.postDelayed(updateRunnable, updateDelay);
 		}));
-	}
 
-	@Override
-	public boolean onTextContextMenuItem(int id) {
-		boolean consumed = super.onTextContextMenuItem(id);
-		if(id == android.R.id.paste) try {
-			setText(Parser.formatCode(getContext(), Objects.requireNonNull(getText()).toString()));
-		} catch(ParseException e) {
-			Toast.makeText(getContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
-			e.printStackTrace();
-		}
-		return consumed;
+		post(() -> {
+			setMinHeight(((ViewGroup)getParent().getParent()).getHeight() - 2 * getResources().getDimensionPixelOffset(R.dimen.dividerHeight));
+			requestLayout();
+		});
 	}
 
 	private void clearSpans(Editable e, int length) {
@@ -123,8 +118,18 @@ public class LineNumberEditText extends AppCompatEditText {
 		setPadding(Math.max(padding, minPadding), getPaddingTop(), getPaddingRight(), getPaddingBottom());
 	}
 
-	@Override
-	protected void onDraw(Canvas canvas) {
+	@Override public boolean onTextContextMenuItem(int id) {
+		boolean consumed = super.onTextContextMenuItem(id);
+		if(id == android.R.id.paste) try {
+			setText(Parser.formatCode(getContext(), Objects.requireNonNull(getText()).toString()));
+		} catch(ParseException e) {
+			Toast.makeText(getContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
+			e.printStackTrace();
+		}
+		return consumed;
+	}
+
+	@Override protected void onDraw(Canvas canvas) {
 		int baseline = getBaseline();
 		for(int i = 0; i < getLineCount(); i++) {
 			canvas.drawText(String.format(Locale.getDefault(), "%d:", i + 1), rect.left + 5, baseline, paint);
@@ -135,5 +140,9 @@ public class LineNumberEditText extends AppCompatEditText {
 				recalculatePadding();
 		} catch(NullPointerException ignored) {}
 		super.onDraw(canvas);
+	}
+
+	@Override public boolean canScrollVertically(int direction) {
+		return false;
 	}
 }

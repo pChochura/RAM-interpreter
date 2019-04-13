@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.CommandsListAdapter;
 import com.pointlessapps.raminterpreter.models.Command;
+import com.pointlessapps.raminterpreter.utils.BottomPaddingItem;
+import com.pointlessapps.raminterpreter.utils.Utils;
 
 import java.util.List;
 
@@ -39,6 +41,7 @@ public class FragmentCommandsList extends Fragment {
 
 	private void setCommandsList() {
 		RecyclerView commandsList = rootView.findViewById(R.id.commandsList);
+		commandsList.addItemDecoration(new BottomPaddingItem(Utils.dpToPx(getContext(), 100)));
 		commandsList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		commandsList.setAdapter(commandsListAdapter = new CommandsListAdapter(commands,
 				new int[]{getResources().getColor(R.color.colorDark), getResources().getColor(R.color.colorLight)}));

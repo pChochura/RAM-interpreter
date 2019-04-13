@@ -28,4 +28,6 @@
     <string name="exception_command_multiple">Polecenia nie mogą składać się z więcej niż jednej komendy. W linii: %d</string>
     <string name="exception_label_multiple">Polecenia nie mogą składać się z więcej niż jednej etykiety. W linii: %d</string>
     <string name="not_formatted">Kod nie mógł zostać sformatowany.</string>
+    <string name="output_format">Format wyjścia</string>
+    <string name="output_format_help">Sformatuj rejestry: tab=2:5, a=5.</string>
 </resources>

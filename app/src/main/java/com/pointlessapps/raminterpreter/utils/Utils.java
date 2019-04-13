@@ -38,12 +38,12 @@ public class Utils {
 			dialog.show();
 	}
 
-	private static Point getScreenSize(Context context) {
+	public static Point getScreenSize(Context context) {
 		DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 		return new Point(displayMetrics.widthPixels, displayMetrics.heightPixels);
 	}
 
-	private static int dpToPx(Context context, int dp) {
+	public static int dpToPx(Context context, int dp) {
 		if(context != null)
 			return (int) (context.getResources().getDisplayMetrics().density * dp);
 		else return 0;
