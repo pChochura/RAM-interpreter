@@ -2,6 +2,7 @@ package com.pointlessapps.raminterpreter.models;
 
 import android.content.Context;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.utils.ParseException;
@@ -131,5 +132,17 @@ public class Parser {
 
 	public static String formatCode(Context context, String code) throws ParseException {
 		return Command.getStringList(formatAsList(context, code));
+	}
+
+	public static int decodeValue(SparseIntArray registers, String address) {
+		if(address.contains("="))
+			return Integer.parseInt(address.substring(1));
+		else return registers.get(decodeAddress(registers, address));
+	}
+
+	public static int decodeAddress(SparseIntArray registers, String address) {
+		if(address.contains("*"))
+			return registers.get(Integer.parseInt(address.substring(1)));
+		else return Integer.parseInt(address);
 	}
 }

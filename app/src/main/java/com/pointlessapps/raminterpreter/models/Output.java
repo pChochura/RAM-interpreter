@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 
 public class Output {
 
-	private static final Pattern outputFormatRegex = Pattern.compile("\\w+=(\\d+:?\\d*)");
-	private static final Pattern outputFormatTableRegex = Pattern.compile("\\w+=(\\d+:\\d+)");
+	private static final Pattern outputFormatRegex = Pattern.compile("\\w+=(\\*?\\d+:?\\*?\\d*)");
+	private static final Pattern outputFormatTableRegex = Pattern.compile("\\w+=(\\*?\\d+:\\*?\\d+)");
 
 	private SparseIntArray values;
 	private String output;
@@ -39,9 +39,9 @@ public class Output {
 			int start, end;
 			name = expression.substring(0, expression.indexOf("="));
 			if(outputFormatTableRegex.matcher(expression).matches()) {
-				start = Integer.parseInt(expression.substring(expression.indexOf("=") + 1, expression.indexOf(":")));
-				end = Integer.parseInt(expression.substring(expression.indexOf(":") + 1));
-			} else start = end = Integer.parseInt(expression.substring(expression.indexOf("=") + 1));
+				start = Parser.decodeAddress(registers, expression.substring(expression.indexOf("=") + 1, expression.indexOf(":")));
+				end = Parser.decodeAddress(registers, expression.substring(expression.indexOf(":") + 1));
+			} else start = end = Parser.decodeAddress(registers, expression.substring(expression.indexOf("=") + 1));
 
 			StringBuilder values = new StringBuilder();
 
@@ -53,7 +53,7 @@ public class Output {
 			finalOutput.append(String.format(Locale.getDefault(), (finalOutput.toString().isEmpty() ? "" : ", ") + "%s=[%s]", name, values.toString()));
 		}
 
-//		//Adding values from WRITE command
+//		Adding values from WRITE command
 		for(int i = 0; i < values.size(); i++) finalOutput.append(finalOutput.toString().isEmpty() ? "" : ", ").append(values.valueAt(i));
 		return finalOutput.toString();
 	}
