@@ -1,6 +1,7 @@
 package com.pointlessapps.raminterpreter.activities;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -30,6 +31,7 @@ import com.pointlessapps.raminterpreter.fragments.FragmentEditor;
 import com.pointlessapps.raminterpreter.models.Command;
 import com.pointlessapps.raminterpreter.models.Executor;
 import com.pointlessapps.raminterpreter.models.Parser;
+import com.pointlessapps.raminterpreter.utils.FileDialog;
 import com.pointlessapps.raminterpreter.utils.ParseException;
 import com.pointlessapps.raminterpreter.utils.Utils;
 
@@ -47,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
 	private final int SAVE_FILE_REQUEST_CODE = 1;
 	private final int OPEN_FILE_REQUEST_CODE = 2;
+
+	private File loadedFromFile;
 
 	private Executor executor;
 	private int currentLine;
@@ -240,47 +244,53 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showSaveFileDialog() {
-		File startingFile = Environment.getExternalStorageDirectory();
-		if(!startingFile.exists())
+		File startingFile = loadedFromFile != null ? loadedFromFile.getParentFile() : Environment.getExternalStorageDirectory();
+		if(startingFile != null && !startingFile.exists())
 			startingFile = Environment.getDataDirectory();
-		FileChooser fileChooser = new FileChooser(this, getResources().getString(R.string.choose_a_file), FileChooser.DialogType.SAVE_AS, startingFile);
-		fileChooser.setFilelistFilter("txt,c,cpp", true);
-		fileChooser.show(file -> {
-			try {
-				OutputStream fo = new FileOutputStream(file);
-				fo.write(Objects.requireNonNull(fragmentEditor.getCode()).getBytes());
-				fo.close();
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
-				fragmentEditor.setEdited(false);
-			} catch(NullPointerException | IOException exception) {
-				exception.printStackTrace();
-			}
-		});
+		new FileDialog(this, getResources().getString(R.string.choose_a_directory), FileDialog.FileDialogType.SELECT_DIRECTORY, startingFile)
+				.withPositiveButton(getResources().getString(R.string.ok), (dialog, file) -> {
+					try {
+						OutputStream fo = new FileOutputStream(file);
+						fo.write(Objects.requireNonNull(fragmentEditor.getCode()).getBytes());
+						fo.close();
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
+						fragmentEditor.setEdited(false);
+					} catch(NullPointerException | IOException exception) {
+						exception.printStackTrace();
+					}
+					dialog.dismiss();
+				})
+				.withNegativeButton(getResources().getString(R.string.cancel), Dialog::dismiss)
+				.setSelectedFile(loadedFromFile)
+				.show();
 	}
 
 	private void showOpenFileDialog() {
 		File startingFile = Environment.getExternalStorageDirectory();
 		if(!startingFile.exists())
 			startingFile = Environment.getDataDirectory();
-		FileChooser fileChooser = new FileChooser(this, getResources().getString(R.string.choose_a_file), FileChooser.DialogType.SELECT_FILE, startingFile);
-		fileChooser.setFilelistFilter("txt,c,cpp", true);
-		fileChooser.show(file -> {
-			StringBuilder builder = new StringBuilder();
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(file));
+		new FileDialog(this, getResources().getString(R.string.choose_a_file), FileDialog.FileDialogType.SELECT_FILE, startingFile)
+				.withPositiveButton(getResources().getString(R.string.ok), (dialog, file) -> {
+					StringBuilder builder = new StringBuilder();
+					try {
+						BufferedReader br = new BufferedReader(new FileReader(file));
 
-				String line;
-				while((line = br.readLine()) != null) builder.append(line).append("\n");
-				fragmentEditor.setCode(Parser.formatCode(getApplicationContext(), builder.toString()));
+						String line;
+						while((line = br.readLine()) != null) builder.append(line).append("\n");
+						fragmentEditor.setCode(Parser.formatCode(getApplicationContext(), builder.toString()));
 
-				br.close();
-			} catch(IOException e) {
-				e.printStackTrace();
-			} catch(ParseException e) {
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
-				fragmentEditor.setCode(builder.toString());
-			}
-		});
+						br.close();
+
+						loadedFromFile = file;
+					} catch(IOException e) {
+						e.printStackTrace();
+					} catch(ParseException e) {
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
+						fragmentEditor.setCode(builder.toString());
+					}
+					dialog.dismiss();
+				})
+				.show();
 	}
 
 	private void showExplanationDialog() {

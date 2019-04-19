@@ -30,4 +30,8 @@
     <string name="not_formatted">Kod nie mógł zostać sformatowany.</string>
     <string name="output_format">Format wyjścia</string>
     <string name="output_format_help">Sformatuj rejestry: tab=2:5, a=5.</string>
+    <string name="choose_a_directory">Wybierz katalog</string>
+    <string name="cancel">Anuluj</string>
+    <string name="filename">Nazwa pliku</string>
+    <string name="override_warning">Czy na pewno chcesz nadpisać plik: %s?</string>
 </resources>

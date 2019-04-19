@@ -30,4 +30,9 @@
     <string name="not_formatted">The code could not be formatted.</string>
     <string name="output_format">Output format</string>
     <string name="output_format_help">Format registers: tab=2:5, a=5.</string>
+    <string name="choose_a_directory">Choose a directory</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="filename">Filename</string>
+    <string name="override_warning">Do you want to override %s file?</string>
 </resources>
