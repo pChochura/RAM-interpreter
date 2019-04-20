@@ -35,4 +35,28 @@
     <string name="cancel">Cancel</string>
     <string name="filename">Filename</string>
     <string name="override_warning">Do you want to override %s file?</string>
+    <string name="description_read">Command READ reads an input value.</string>
+    <string name="description_load">Command LOAD copies a value from pointed register to the register 0.</string>
+    <string name="description_write">Command WRITE adds a value to the output.</string>
+    <string name="description_jump">Command JUMP sets next executed line to the pointed by an address.</string>
+    <string name="description_jzero">Command JZERO sets next executed line to the pointed by an address only if the value of register 0 is equal to 0.</string>
+    <string name="description_jgtz">Command JGTZ sets next executed line to the pointed by an address only if the value of register 0 is grater than 0.</string>
+    <string name="description_sub">Command SUB subtracts a value from the register 0.</string>
+    <string name="description_add">Command ADD adds a given value to the register 0.</string>
+    <string name="description_mult">Command MULT multiplies a value from register 0 by a given value.</string>
+    <string name="description_div">Command DIV divides a value from register 0 by a given value.</string>
+    <string name="description_halt">Command HALT stops execution.</string>
+    <string name="description_store">Command STORE copies a value from the register 0 to the pointed register.</string>
+    <string name="example_read"><![CDATA[<br>Examples:<br>READ 1<br>READ *1]]></string>
+    <string name="example_load"><![CDATA[<br>Examples:<br>LOAD =1<br>LOAD 1<br>LOAD *1]]></string>
+    <string name="example_write"><![CDATA[<br>Examples:<br>WRITE =1<br>WRITE 1<br>WRITE *1]]></string>
+    <string name="example_jump"><![CDATA[<br>Example:<br>JUMP address]]></string>
+    <string name="example_jzero"><![CDATA[<br>Example:<br>JZERO address]]></string>
+    <string name="example_jgtz"><![CDATA[<br>Example:<br>JGTZ address]]></string>
+    <string name="example_sub"><![CDATA[<br>Examples:<br>SUB =1<br>SUB 1<br>SUB *1]]></string>
+    <string name="example_add"><![CDATA[<br>Examples:<br>ADD =1<br>ADD 1<br>ADD *1]]></string>
+    <string name="example_mult"><![CDATA[<br>Examples:<br>MULT =1<br>MULT 1<br>MULT *1]]></string>
+    <string name="example_div"><![CDATA[<br>Examples:<br>DIV =1<br>DIV 1<br>DIV *1]]></string>
+    <string name="example_halt"><![CDATA[<br>Example:<br>HALT]]></string>
+    <string name="example_store"><![CDATA[<br>Examples:<br>STORE 1<br>STORE *1]]></string>
 </resources>

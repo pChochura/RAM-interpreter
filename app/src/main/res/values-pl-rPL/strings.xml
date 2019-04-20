@@ -34,4 +34,28 @@
     <string name="cancel">Anuluj</string>
     <string name="filename">Nazwa pliku</string>
     <string name="override_warning">Czy na pewno chcesz nadpisać plik: %s?</string>
+    <string name="description_add">Komenda ADD dodaje podaną wartość do rejstru 0.</string>
+    <string name="description_div">Komenda DIV dzieli wartość w rejestrze 0 przez podaną.</string>
+    <string name="description_halt">Komenda HALT zatrzymuje wykonywanie programu.</string>
+    <string name="description_jgtz">Komenda JGTZ ustawia kolejną wykonywaną linię na wskazywaną przez podany adres, tylko jeśli w rejestrze 0 znajduje się wartość większa niż 0.</string>
+    <string name="description_jump">Komenda JUMP ustawia kolejną wykonywaną linię na wskazywaną przez podany adres.</string>
+    <string name="description_jzero">Komenda JZERO ustawia kolejną wykonywaną linię na wskazywaną przez adres, tylko jeśli w rejestrze 0 znajduje się wartość równa 0.</string>
+    <string name="description_load">Komenda LOAD kopiuje wartość z wskazanego rejstru do rejstru 0.</string>
+    <string name="description_mult">Komenda MULT mnoży wartość z rejestru 0 przez podaną.</string>
+    <string name="description_read">Komenda READ odczytuje wartość z wejścia.</string>
+    <string name="description_store">Komenda STORE kopiuje wartość z rejestru 0 do wskazanego.</string>
+    <string name="description_sub">Komenda SUB odejmuje podaną wartość od wartości z rejestru 0.</string>
+    <string name="description_write">Komenda WRITE dopisuje podaną wartość na wyjściu.</string>
+    <string name="example_read"><![CDATA[<br>Przykłady:<br>READ 1<br>READ *1]]></string>
+    <string name="example_load"><![CDATA[<br>Przykłady:<br>LOAD =1<br>LOAD 1<br>LOAD *1]]></string>
+    <string name="example_write"><![CDATA[<br>Przykłady:<br>WRITE =1<br>WRITE 1<br>WRITE *1]]></string>
+    <string name="example_jump"><![CDATA[<br>Przykład:<br>JUMP address]]></string>
+    <string name="example_jzero"><![CDATA[<br>Przykład:<br>JZERO address]]></string>
+    <string name="example_jgtz"><![CDATA[<br>Przykład:<br>JGTZ address]]></string>
+    <string name="example_sub"><![CDATA[<br>Przykłady:<br>SUB =1<br>SUB 1<br>SUB *1]]></string>
+    <string name="example_add"><![CDATA[<br>Przykłady:<br>ADD =1<br>ADD 1<br>ADD *1]]></string>
+    <string name="example_mult"><![CDATA[<br>Przykłady:<br>MULT =1<br>MULT 1<br>MULT *1]]></string>
+    <string name="example_div"><![CDATA[<br>Przykłady:<br>DIV =1<br>DIV 1<br>DIV *1]]></string>
+    <string name="example_halt"><![CDATA[<br>Przykład:<br>HALT]]></string>
+    <string name="example_store"><![CDATA[<br>Przykłady:<br>STORE 1<br>STORE *1]]></string>
 </resources>

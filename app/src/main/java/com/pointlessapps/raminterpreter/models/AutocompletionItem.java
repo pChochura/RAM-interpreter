@@ -6,9 +6,11 @@ public class AutocompletionItem implements Comparable<AutocompletionItem> {
 
 	public static final Comparator<? super AutocompletionItem> ItemComparator = AutocompletionItem::compareTo;
 
+	String description;
 	private String text;
 	private String matching;
-	private String description;
+	private boolean extended;
+	private boolean hasDescription;
 
 	public String getText() {
 		return text;
@@ -67,5 +69,21 @@ public class AutocompletionItem implements Comparable<AutocompletionItem> {
 			}
 		}
 		return 0;
+	}
+
+	public void setExtended(boolean extended) {
+		this.extended = extended;
+	}
+
+	public boolean isExtended() {
+		return extended;
+	}
+
+	public boolean hasDescription() {
+		return hasDescription;
+	}
+
+	public void setHasDescription(boolean hasDescription) {
+		this.hasDescription = hasDescription;
 	}
 }

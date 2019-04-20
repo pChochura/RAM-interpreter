@@ -17,6 +17,7 @@ import android.view.ViewTreeObserver;
 
 import com.pointlessapps.raminterpreter.R;
 import com.pointlessapps.raminterpreter.adapters.AutocompletionListAdapter;
+import com.pointlessapps.raminterpreter.models.AutocompletionDescription;
 import com.pointlessapps.raminterpreter.models.AutocompletionItem;
 import com.pointlessapps.raminterpreter.models.Command;
 import com.pointlessapps.raminterpreter.models.Executor;
@@ -43,6 +44,7 @@ public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 	private KeyboardHeightProvider keyboardHeightProvider;
 
 	private boolean edited;
+	public AutocompletionDescription descriptionItem;
 
 	@Override public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		if(rootView == null) {
@@ -56,43 +58,41 @@ public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 		return rootView;
 	}
 
-	@Override public void onStart() {
-		super.onStart();
-		if(executor != null) setCode(Command.getStringList(executor.getCommands()));
-		keyboardHeightProvider.start();
-	}
-
-	@Override public void onPause() {
-		super.onPause();
-		keyboardHeightProvider.setKeyboardHeightObserver(null);
-	}
-
-	@Override public void onResume() {
-		super.onResume();
-		keyboardHeightProvider.setKeyboardHeightObserver(this);
-	}
-
-	@Override public void onDestroy() {
-		super.onDestroy();
-		keyboardHeightProvider.close();
-	}
-
 	private void init() {
 		edited = false;
+		descriptionItem = new AutocompletionDescription();
 
 		RecyclerView autocompletionList = rootView.findViewById(R.id.autocompletionList);
 		autocompletionList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		autocompletionList.setAdapter(autocompletionListAdapter = new AutocompletionListAdapter(items = new ArrayList<>()));
-		autocompletionListAdapter.setOnClickListener(text -> {
-			LineNumberEditText commandsEditor = rootView.findViewById(R.id.commandsEditor);
-			int selection;
-			if((selection = commandsEditor.getSelectionStart()) == commandsEditor.getSelectionEnd()) {
-				Editable editorText = commandsEditor.getText();
-				if(editorText != null) {
-					int startWordIndex = getStartWordIndex(editorText, selection);
-					commandsEditor.setText(editorText.replace(startWordIndex, commandsEditor.getSelectionEnd(), text.concat(" ")));
-					commandsEditor.setSelection(startWordIndex + text.length() + 1);
+		autocompletionListAdapter.setOnClickListener(new AutocompletionListAdapter.OnClickListener() {
+			@Override public void onClick(String text) {
+				LineNumberEditText commandsEditor = rootView.findViewById(R.id.commandsEditor);
+				int selection;
+				if((selection = commandsEditor.getSelectionStart()) == commandsEditor.getSelectionEnd()) {
+					Editable editorText = commandsEditor.getText();
+					if(editorText != null) {
+						int startWordIndex = getStartWordIndex(editorText, selection);
+						commandsEditor.setText(editorText.replace(startWordIndex, commandsEditor.getSelectionEnd(), text.concat(" ")));
+						commandsEditor.setSelection(startWordIndex + text.length() + 1);
+					}
 				}
+			}
+
+			@Override public void onInfoClick(AutocompletionItem item) {
+				item.setExtended(!item.isExtended());
+				if(!item.isExtended()) items.remove(descriptionItem);
+				else {
+					int index = items.indexOf(item) + 1, i;
+					int descriptionID = getResources().getIdentifier("description_" + item.getText().toLowerCase(), "string", rootView.getContext().getPackageName());
+					int exampleID = getResources().getIdentifier("example_" + item.getText().toLowerCase(), "string", rootView.getContext().getPackageName());
+					if(descriptionID != 0) descriptionItem.set(getResources().getString(descriptionID), getResources().getString(exampleID));
+					if((i = items.indexOf(descriptionItem)) != -1 && i - 1 >= 0) {
+						items.get(i - 1).setExtended(false);
+						Collections.swap(items, i, index - (index > i ? 1 : 0));
+					} else items.add(index, descriptionItem);
+				}
+				autocompletionListAdapter.notifyDataSetChanged();
 			}
 		});
 
@@ -158,6 +158,7 @@ public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 			for(String s : Command.keyWords) {
 				if(s.toLowerCase().contains(text.toLowerCase())) {
 					AutocompletionItem item = new AutocompletionItem();
+					item.setHasDescription(true);
 					item.setText(s);
 					item.setMatching(text);
 					item.setDescription(getResources().getString(R.string.command));
@@ -171,6 +172,7 @@ public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 				for(String label : labelIndexes.keySet()) {
 					if(label.toLowerCase().contains(text.toLowerCase())) {
 						AutocompletionItem item = new AutocompletionItem();
+						item.setHasDescription(false);
 						item.setText(label);
 						item.setMatching(text);
 						item.setDescription(getResources().getString(R.string.label));
@@ -241,5 +243,26 @@ public class FragmentEditor extends Fragment implements KeyboardHeightObserver {
 
 	@Override public void onKeyboardHeightChanged(int height, int orientation) {
 		((LineNumberEditText)rootView.findViewById(R.id.commandsEditor)).adjustMinHeight(height);
+	}
+
+	@Override public void onStart() {
+		super.onStart();
+		if(executor != null) setCode(Command.getStringList(executor.getCommands()));
+		keyboardHeightProvider.start();
+	}
+
+	@Override public void onPause() {
+		super.onPause();
+		keyboardHeightProvider.setKeyboardHeightObserver(null);
+	}
+
+	@Override public void onResume() {
+		super.onResume();
+		keyboardHeightProvider.setKeyboardHeightObserver(this);
+	}
+
+	@Override public void onDestroy() {
+		super.onDestroy();
+		keyboardHeightProvider.close();
 	}
 }

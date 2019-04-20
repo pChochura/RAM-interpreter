@@ -6,7 +6,7 @@ android {
         nameOptions {
             versionMajor 1
             versionMinor 2
-            versionPatch 2
+            versionPatch 3
         }
         codeOptions {
             versionCodeType org.moallemi.gradle.internal.VersionCodeType.AUTO_INCREMENT_DATE
