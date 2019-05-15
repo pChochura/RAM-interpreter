@@ -255,8 +255,8 @@ public class MainActivity extends AppCompatActivity {
 						fo.close();
 						Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_saved), Toast.LENGTH_SHORT).show();
 						fragmentEditor.setEdited(false);
-					} catch(NullPointerException | IOException exception) {
-						exception.printStackTrace();
+					} catch(NullPointerException | IOException e) {
+						e.printStackTrace();
 					}
 					dialog.dismiss();
 				})
@@ -282,11 +282,11 @@ public class MainActivity extends AppCompatActivity {
 						br.close();
 
 						loadedFromFile = file;
-					} catch(IOException e) {
-						e.printStackTrace();
 					} catch(ParseException e) {
 						Toast.makeText(getApplicationContext(), getResources().getString(R.string.not_formatted), Toast.LENGTH_SHORT).show();
 						fragmentEditor.setCode(builder.toString());
+					} catch(NullPointerException | IOException e) {
+						e.printStackTrace();
 					}
 					dialog.dismiss();
 				})
